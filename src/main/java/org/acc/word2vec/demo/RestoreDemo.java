@@ -13,6 +13,6 @@ public class RestoreDemo {
     public static void main(String[] args) throws FileNotFoundException {
         Word2Vec word2Vec = Word2VecUtils
                 .restore("D:\\tmp\\word2vec\\result");
-        System.out.println(word2Vec.wordsNearest("资本", 10));
+        System.out.println(word2Vec.wordsNearest("正义", 10));
     }
 }
