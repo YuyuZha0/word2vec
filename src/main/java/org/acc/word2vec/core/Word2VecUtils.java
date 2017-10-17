@@ -2,12 +2,13 @@ package org.acc.word2vec.core;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import lombok.NonNull;
 import org.acc.word2vec.text.AnsjTokenizerFactory;
 import org.acc.word2vec.text.ChineseTokenPreProcess;
-import org.acc.word2vec.util.RegexUtils;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.sentenceiterator.CollectionSentenceIterator;
@@ -20,10 +21,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zhaoyy on 2016/12/19.
@@ -38,8 +40,7 @@ public final class Word2VecUtils {
 
     private static Word2Vec fit(Collection<String> sentences, File file) {
 
-        if (sentences == null || sentences.isEmpty())
-            return null;
+        Preconditions.checkArgument(sentences != null && !sentences.isEmpty(), "empty sentences!");
         SentenceIterator iterator = new CollectionSentenceIterator(sentences);
         TokenizerFactory tokenizerFactory = new AnsjTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new ChineseTokenPreProcess());
@@ -92,28 +93,38 @@ public final class Word2VecUtils {
             }
             if (lines == null)
                 continue;
-            for (String line : lines)
+            for (String line : lines) {
                 builder.append(line);
+                builder.append('\n');
+            }
         }
         return builder;
     }
 
-    private static List<String> splitIntoSentences(CharSequence cs, String regex) {
-        return RegexUtils.group(cs, regex);
-    }
 
     public static Builder newWord2Vec() {
         return new Builder();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static final class Builder {
-        private final Set<File> files = new HashSet<File>();
+        private final ImmutableSet.Builder<File> files = ImmutableSet.builder();
         private Charset charset = Charsets.UTF_8;
         private File file = null;
 
         public Builder addTextFile(@NonNull File file) {
             Preconditions.checkArgument(file != null && file.isFile(), "invalid file");
             files.add(file);
+            return this;
+        }
+
+        public Builder addAllTextFile(String path, Predicate<File> filter){
+            File dir = new File(path);
+            Preconditions.checkArgument(dir.exists() && dir.isDirectory(), path + " is not a directory");
+            Files.fileTreeTraverser()
+                    .breadthFirstTraversal(dir)
+                    .filter(filter)
+                    .forEach(files::add);
             return this;
         }
 
@@ -131,6 +142,7 @@ public final class Word2VecUtils {
             return this;
         }
 
+        @SuppressWarnings("ResultOfMethodCallIgnored")
         public Builder saveAt(@NonNull String path, boolean delOld) {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "illegal path");
             File file = new File(path);
@@ -159,11 +171,16 @@ public final class Word2VecUtils {
         }
 
         public Word2Vec build() {
-            CharSequence cs = readAllText(files, charset);
-            List<String> sentences = splitIntoSentences(cs, "[^，,。.？?！!\\\\s]+");
+            CharSequence cs = readAllText(files.build(), charset);
+            Matcher matcher = SENTENCE_PATTERN.matcher(cs);
+            List<String> sentences = new ArrayList<>();
+            while (matcher.find()){
+                sentences.add(matcher.group());
+            }
             return fit(sentences, file);
         }
     }
 
+    private static final Pattern SENTENCE_PATTERN = Pattern.compile("[\u4e00-\u9fa50-9a-zA-Z]+");
 
 }

@@ -21,10 +21,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <slf4j.version>1.7.12</slf4j.version>
-        <nd4j.version>0.7.1</nd4j.version>
-        <dl4j.version>0.7.1</dl4j.version>
-        <ansj.version>5.0.1</ansj.version>
-        <guava.version>20.0</guava.version>
+        <nd4j.version>0.9.1</nd4j.version>
+        <dl4j.version>0.9.1</dl4j.version>
+        <blas.version>1.2.4</blas.version>
+        <ansj.version>5.1.1</ansj.version>
+        <guava.version>21.0</guava.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.jblas</groupId>
+            <artifactId>jblas</artifactId>
+            <version>${blas.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -99,7 +105,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
-                    <encoding>UTF-8</encoding>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
             <!-- 编译插件 -->
@@ -109,7 +115,7 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
         </plugins>
