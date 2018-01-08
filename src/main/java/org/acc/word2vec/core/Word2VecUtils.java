@@ -17,13 +17,12 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +32,7 @@ import java.util.regex.Pattern;
 public final class Word2VecUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(Word2VecUtils.class);
+    private static final Pattern SENTENCE_PATTERN = Pattern.compile("[\u4e00-\u9fa50-9a-zA-Z]+");
 
     private Word2VecUtils() {
 
@@ -85,22 +85,19 @@ public final class Word2VecUtils {
         StringBuilder builder = new StringBuilder();
         for (File file : files) {
             logger.info("reading text from [{}]...", file.getAbsolutePath());
-            List<String> lines = null;
-            try {
-                lines = Files.readLines(file, charset);
+            try (InputStream in = new FileInputStream(file)) {
+                Scanner scanner = new Scanner(in, charset.name());
+                while (scanner.hasNextLine()) {
+                    builder.append(scanner.nextLine());
+                    builder.append('\n');
+                }
+                scanner.close();
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
-            }
-            if (lines == null)
-                continue;
-            for (String line : lines) {
-                builder.append(line);
-                builder.append('\n');
             }
         }
         return builder;
     }
-
 
     public static Builder newWord2Vec() {
         return new Builder();
@@ -118,7 +115,7 @@ public final class Word2VecUtils {
             return this;
         }
 
-        public Builder addAllTextFile(String path, Predicate<File> filter){
+        public Builder addAllTextFile(String path, Predicate<File> filter) {
             File dir = new File(path);
             Preconditions.checkArgument(dir.exists() && dir.isDirectory(), path + " is not a directory");
             Files.fileTreeTraverser()
@@ -174,13 +171,11 @@ public final class Word2VecUtils {
             CharSequence cs = readAllText(files.build(), charset);
             Matcher matcher = SENTENCE_PATTERN.matcher(cs);
             List<String> sentences = new ArrayList<>();
-            while (matcher.find()){
+            while (matcher.find()) {
                 sentences.add(matcher.group());
             }
             return fit(sentences, file);
         }
     }
-
-    private static final Pattern SENTENCE_PATTERN = Pattern.compile("[\u4e00-\u9fa50-9a-zA-Z]+");
 
 }

@@ -8,24 +8,24 @@ import org.ansj.splitWord.analysis.ToAnalysis;
 import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 import org.deeplearning4j.text.tokenization.tokenizer.Tokenizer;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 /**
  * Created by zhaoyy on 2016/12/19.
  */
 public final class AnsjTokenizer implements Tokenizer {
 
+    private static final AtomicIntegerFieldUpdater<AnsjTokenizer> INDEX_UPDATER = AtomicIntegerFieldUpdater.newUpdater(AnsjTokenizer.class, "index");
+
     private final List<String> tokenizer;
-    private final AtomicInteger index;
+    private volatile int index = 0;
     private TokenPreProcess tokenPreProcess;
 
     public AnsjTokenizer(String toTokenize) {
         this.tokenizer = tokenize(toTokenize);
-        this.index = new AtomicInteger(0);
     }
 
     private static List<String> tokenize(String toTokenize) {
@@ -33,18 +33,18 @@ public final class AnsjTokenizer implements Tokenizer {
             return Collections.emptyList();
         Iterator<Term> iterator = ToAnalysis.parse(toTokenize)
                 .iterator();
-        List<String> tokenizer = new ArrayList<String>();
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
         while (iterator.hasNext()) {
             String name = iterator.next().getName();
             if (!Strings.isNullOrEmpty(name))
-                tokenizer.add(name);
+                builder.add(name);
         }
-        return ImmutableList.copyOf(tokenizer);
+        return builder.build();
     }
 
     @Override
     public boolean hasMoreTokens() {
-        return index.get() < tokenizer.size();
+        return index < tokenizer.size();
     }
 
     @Override
@@ -54,7 +54,7 @@ public final class AnsjTokenizer implements Tokenizer {
 
     @Override
     public String nextToken() {
-        int i = index.getAndIncrement();
+        int i = INDEX_UPDATER.getAndIncrement(this);
         Preconditions.checkPositionIndex(i, tokenizer.size());
         String base = tokenizer.get(i);
         if (tokenPreProcess != null)
