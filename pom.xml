@@ -18,11 +18,23 @@
     </repositories>
 
     <properties>
+        <cpu.arch>macosx-x86_64</cpu.arch>
+        <!-- Please Choose The Right Platform for Your Machine -->
+        <!-- <cpu.arch>linux-x86_64</cpu.arch>
+         <cpu.arch>linux-ppc64le</cpu.arch>
+         <cpu.arch>windows-x86_64</cpu.arch>
+         <cpu.arch>macosx-x86_64</cpu.arch>
+         <cpu.arch>android-x86_64</cpu.arch>
+         <cpu.arch>android-arm</cpu.arch>
+         <cpu.arch>android-arm64</cpu.arch>
+         <cpu.arch>android-x86</cpu.arch>
+         <cpu.arch>ios-x86_64</cpu.arch>
+         <cpu.arch>ios-arm64</cpu.arch>-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <slf4j.version>1.7.12</slf4j.version>
-        <nd4j.version>0.9.1</nd4j.version>
-        <dl4j.version>0.9.1</dl4j.version>
+        <nd4j.version>1.0.0-beta2</nd4j.version>
+        <dl4j.version>1.0.0-beta2</dl4j.version>
         <blas.version>1.2.4</blas.version>
         <ansj.version>5.1.1</ansj.version>
         <guava.version>21.0</guava.version>
@@ -62,6 +74,33 @@
         </dependency>
         <dependency>
             <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-core</artifactId>
+            <version>${dl4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>deeplearning4j-tsne</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.deeplearning4j</groupId>
+                    <artifactId>deeplearning4j-ui-components</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.datavec</groupId>
+                    <artifactId>datavec-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.datavec</groupId>
+                    <artifactId>datavec-data-image</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
             <artifactId>deeplearning4j-nlp</artifactId>
             <version>${dl4j.version}</version>
         </dependency>
@@ -71,31 +110,23 @@
             <version>${nd4j.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>${nd4j.version}</version>
+            <classifier>${cpu.arch}</classifier>
+        </dependency>
+        <dependency>
             <groupId>org.ansj</groupId>
             <artifactId>ansj_seg</artifactId>
             <!--<classifier>min</classifier>-->
             <version>${ansj.version}</version>
         </dependency>
-       <!-- <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.20</version>
+            <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jblas</groupId>
-            <artifactId>jblas</artifactId>
-            <version>${blas.version}</version>
-        </dependency>-->
     </dependencies>
 
     <build>
