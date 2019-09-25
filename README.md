@@ -11,3 +11,9 @@ Word2VecUtils.newWord2Vec()
         .saveAt("/Users/zhaoyuyu/temp/result", true)
         .build();
 ```
+
+Restore example:
+```
+ Word2Vec word2Vec = Word2VecUtils.restore("/Users/zhaoyuyu/temp/result");
+    System.out.println(word2Vec.wordsNearest("法律", 10));
+```
