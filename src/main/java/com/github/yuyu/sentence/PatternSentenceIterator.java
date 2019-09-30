@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class PatternSentenceIterator extends BaseSentenceIterator {
 
+  private final Matcher matcher;
   private String currentMatch = null;
-  private Matcher matcher = null;
 
   public PatternSentenceIterator(
       @NonNull Pattern pattern, @NonNull Charset charset, @NonNull Collection<File> files) {
