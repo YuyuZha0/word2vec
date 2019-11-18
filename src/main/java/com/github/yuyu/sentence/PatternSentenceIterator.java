@@ -52,6 +52,7 @@ public final class PatternSentenceIterator extends BaseSentenceIterator {
   }
 
   private static char[] concatCharArray(char[] chars1, char[] chars2) {
+    if (chars1.length + chars2.length < 0) throw new OutOfMemoryError("string too large!");
     char[] chars = new char[chars1.length + chars2.length];
     System.arraycopy(chars1, 0, chars, 0, chars1.length);
     System.arraycopy(chars2, 0, chars, chars1.length, chars2.length);
