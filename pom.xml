@@ -36,8 +36,9 @@
         <nd4j.version>1.0.0-beta2</nd4j.version>
         <dl4j.version>1.0.0-beta2</dl4j.version>
         <blas.version>1.2.4</blas.version>
-        <ansj.version>5.1.1</ansj.version>
+        <ansj.version>5.1.6</ansj.version>
         <guava.version>21.0</guava.version>
+        <logback.version>1.2.3</logback.version>
     </properties>
 
     <dependencies>
@@ -47,30 +48,14 @@
             <version>4.12</version>
         </dependency>
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <!-- log4j -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.deeplearning4j</groupId>
@@ -124,7 +109,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.20</version>
+            <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

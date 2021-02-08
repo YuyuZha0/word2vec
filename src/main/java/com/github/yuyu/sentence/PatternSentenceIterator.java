@@ -1,16 +1,22 @@
 package com.github.yuyu.sentence;
 
+import com.google.common.io.CharStreams;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.deeplearning4j.text.sentenceiterator.BaseSentenceIterator;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,55 +27,55 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class PatternSentenceIterator extends BaseSentenceIterator {
 
-  private final Matcher matcher;
+  private final Pattern pattern;
+  private final Charset charset;
+  private final Set<Path> pathSet;
+  private final Deque<Path> pathDeque;
+  private Matcher currentMatcher = null;
   private String currentMatch = null;
 
   public PatternSentenceIterator(
-      @NonNull Pattern pattern, @NonNull Charset charset, @NonNull Collection<File> files) {
+          @NonNull Pattern pattern, @NonNull Charset charset, @NonNull Collection<Path> paths) {
     super();
-    try {
-      this.matcher = pattern.matcher(readFilesToString(files, charset));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    this.pattern = pattern;
+    this.charset = charset;
+    this.pathSet = new HashSet<>(paths);
+    this.pathDeque = new ArrayDeque<>(pathSet);
     advance();
   }
 
-  private static String readFilesToString(Collection<File> files, Charset charset)
-      throws IOException {
-    char[] chars = null;
-    for (File file : files) {
-      log.info("reading content in file[{}]...", file.getAbsolutePath());
-      if (chars != null) {
-        char[] chars1 = IOUtils.toCharArray(new FileInputStream(file), charset);
-        chars = concatCharArray(chars, chars1);
-      } else {
-        chars = IOUtils.toCharArray(new FileInputStream(file), charset);
-      }
-    }
-    assert chars != null;
-    return new String(chars);
-  }
-
-  private static char[] concatCharArray(char[] chars1, char[] chars2) {
-    if (chars1.length + chars2.length < 0) throw new OutOfMemoryError("string too large!");
-    char[] chars = new char[chars1.length + chars2.length];
-    System.arraycopy(chars1, 0, chars, 0, chars1.length);
-    System.arraycopy(chars2, 0, chars, chars1.length, chars2.length);
-    return chars;
-  }
-
   private void advance() {
-    if (matcher.find()) {
-      currentMatch = matcher.group();
-    } else {
-      currentMatch = null;
+    if (currentMatcher == null) {
+      if (pathDeque.isEmpty()) {
+        currentMatch = null;
+        return;
+      }
+      nextMatcher();
+    }
+    if (currentMatcher.find()) {
+      currentMatch = currentMatcher.group();
+      return;
+    }
+    currentMatcher = null;
+    advance();
+  }
+
+  private void nextMatcher() {
+    Path path = Objects.requireNonNull(pathDeque.poll());
+    log.info("Try opening txt file [{}] ...", path);
+    try (BufferedReader reader = Files.newBufferedReader(path, charset)) {
+      //noinspection UnstableApiUsage
+      currentMatcher = pattern.matcher(CharStreams.toString(reader));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
   @Override
   public String nextSentence() {
-    if (currentMatch == null) throw new NoSuchElementException();
+    if (currentMatch == null) {
+      throw new NoSuchElementException();
+    }
     String m = currentMatch;
     advance();
     return m;
@@ -82,7 +88,9 @@ public final class PatternSentenceIterator extends BaseSentenceIterator {
 
   @Override
   public void reset() {
-    matcher.reset();
+    currentMatcher = null;
+    pathDeque.clear();
+    pathDeque.addAll(pathSet);
     advance();
   }
 }
