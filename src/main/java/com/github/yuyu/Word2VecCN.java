@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * @author zhaoyuyu
@@ -115,7 +115,7 @@ public final class Word2VecCN {
 
     public Word2VecCNBuilder addFile(@NonNull Path path) {
       Preconditions.checkArgument(
-              !Files.isDirectory(path)
+              Files.isRegularFile(path)
               && Files.isReadable(path), "invalid file path: %s",
               path
       );
@@ -137,8 +137,8 @@ public final class Word2VecCN {
               && Files.isReadable(path),
               "invalid directory: %s", path
       );
-      try {
-        Files.walk(path, FileVisitOption.FOLLOW_LINKS)
+      try (Stream<Path> pathStream = Files.walk(path)) {
+        pathStream
                 .filter(predicate)
                 .forEach(this::addFile);
       } catch (IOException e) {
